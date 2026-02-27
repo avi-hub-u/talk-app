@@ -3,80 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Odae Custom App</title>
+    <title>Odae App - Special Edition</title>
     <style>
         :root {
-            --lv1-color: #fceea7; /* 画像1のイエロー */
-            --lv2-color: #a7e4e1; /* 画像2のブルー */
-            --lv3-color: #f294b4; /* 画像3のピンク */
+            --lv1-color: #fceea7;
+            --lv2-color: #a7e4e1;
+            --lv3-color: #f294b4;
             --bg-color: #ffffff;
         }
-        body { font-family: sans-serif; background-color: var(--bg-color); display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        body { font-family: sans-serif; background-color: var(--bg-color); display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; overflow: hidden; }
         .container { width: 90%; max-width: 400px; text-align: center; }
-        
         .tabs { display: flex; justify-content: center; gap: 10px; margin-bottom: 25px; }
-        .tab { padding: 12px 20px; border-radius: 15px; border: 2px solid #ddd; font-weight: bold; cursor: pointer; transition: 0.3s; background: #fff; }
-        .tab.active { color: #333; border-color: currentColor; transform: scale(1.1); }
+        .tab { padding: 12px 20px; border-radius: 15px; border: 2px solid #ddd; font-weight: bold; cursor: pointer; transition: 0.3s; background: #fff; outline: none; }
+        .tab.active { color: #333; transform: scale(1.1); }
         .tab-1.active { background-color: var(--lv1-color); border-color: #e6d68a; }
         .tab-2.active { background-color: var(--lv2-color); border-color: #8ccbc8; }
         .tab-3.active { background-color: var(--lv3-color); border-color: #d67b9a; color: white; }
-
         #card {
             background: white; height: 220px; border-radius: 25px;
-            display: flex; align-items: center; justify-content: center;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
             padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.08);
             font-size: 1.4rem; font-weight: bold; margin-bottom: 35px;
-            border: 6px solid #eee; transition: 0.3s; color: #444;
+            border: 6px solid #eee; transition: 0.3s; color: #444; position: relative;
         }
-
+        .count-badge { position: absolute; top: 15px; right: 20px; font-size: 0.8rem; color: #999; }
         .draw-btn {
             width: 100%; padding: 18px; border-radius: 50px; border: none;
             color: white; font-size: 1.3rem; font-weight: bold; cursor: pointer;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1); transition: 0.2s;
         }
-        .draw-btn:active { transform: translateY(3px); box-shadow: none; }
     </style>
 </head>
 <body>
-
 <div class="container">
     <div class="tabs">
         <button id="tab1" class="tab tab-1 active" onclick="setLv(1)">Lv 1</button>
         <button id="tab2" class="tab tab-2" onclick="setLv(2)">Lv 2</button>
         <button id="tab3" class="tab tab-3" onclick="setLv(3)">Lv 3</button>
     </div>
-    <div id="card">お題を引こう！</div>
+    <div id="card">
+        <div id="count" class="count-badge"></div>
+        <div id="odae-text">お題を引こう！</div>
+    </div>
     <button id="mainBtn" class="draw-btn" onclick="draw()">お題を引く！</button>
 </div>
-
 <script>
-    const data = {
+    const originalData = {
         1: ["肉派？魚派？", "夏と冬どっち派？", "今ハマっているもの", "朝型？夜型？", "人に言われて嬉しい言葉", "自分の長所をひとつ", "ストレス発散はなにする？", "明日から一か月休みならどこで何したい？", "好きな人は追う？追われたい？", "告白したい？されたい？", "遠距離恋愛はできる？", "今どれくらいフリー？"],
         2: ["恋人には甘えたい？甘えられたい？甘やかしたい？", "恋人との連絡の頻度は？", "理想のデートは？", "まず異性のどこを見る？", "落ち着く瞬間ってどんな時？", "異性にドキッとする瞬間", "付き合う前に知っておきたいことはある？", "酔ったらどうなる？", "三大欲求を10として、その割合は？"],
         3: ["恋人ができたら最初にしたいこと", "週に何回致したい？何回なら致せる？", "Ｓ？Ｍ？", "人生で大事にしていること", "10年後どうなっていたい？", "自分の短所をひとつ", "落ち込んだ時の回復方法", "怒ったときはどうなるタイプ？", "恋人に求めるものは？", "行為について話し合えるタイプ？", "孤独を感じるのはどんな時？", "本気で泣いたのはいつ？"]
     };
-
+    let remainingData = { 1: [...originalData[1]], 2: [...originalData[2]], 3: [...originalData[3]] };
     let currentLv = 1;
     const colors = { 1: '#fceea7', 2: '#a7e4e1', 3: '#f294b4' };
     const btnColors = { 1: '#d4c26a', 2: '#78b9b6', 3: '#f294b4' };
-
+    function updateCount() {
+        const total = originalData[currentLv].length;
+        const current = total - remainingData[currentLv].length;
+        document.getElementById('count').innerText = current + " / " + total;
+    }
     function setLv(lv) {
         currentLv = lv;
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
         document.getElementById('tab' + lv).classList.add('active');
         document.getElementById('mainBtn').style.backgroundColor = btnColors[lv];
         document.getElementById('card').style.borderColor = colors[lv];
-        document.getElementById('card').innerText = "Level " + lv + " を選択中";
+        document.getElementById('odae-text').innerText = "Level " + lv + " を選択中";
+        updateCount();
     }
-
     function draw() {
-        const list = data[currentLv];
-        const res = list[Math.floor(Math.random() * list.length)];
+        if (remainingData[currentLv].length === 0) {
+            remainingData[currentLv] = [...originalData[currentLv]];
+            alert("Level " + currentLv + " のお題をすべて出し切りました！リセットします。");
+        }
+        const list = remainingData[currentLv];
+        const randomIndex = Math.floor(Math.random() * list.length);
+        const res = list.splice(randomIndex, 1)[0];
         const card = document.getElementById('card');
+        const text = document.getElementById('odae-text');
         card.style.transform = "scale(0.95)";
         setTimeout(() => {
-            card.innerText = res;
+            text.innerText = res;
             card.style.transform = "scale(1)";
+            updateCount();
         }, 100);
     }
     setLv(1);
