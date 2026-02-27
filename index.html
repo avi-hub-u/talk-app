@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Odae App - Special Edition</title>
+    <title>Odae App - Stable Edition</title>
     <style>
         :root {
             --lv1-color: #fceea7;
@@ -14,7 +14,7 @@
         body { font-family: sans-serif; background-color: var(--bg-color); display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; overflow: hidden; }
         .container { width: 90%; max-width: 400px; text-align: center; }
         .tabs { display: flex; justify-content: center; gap: 10px; margin-bottom: 25px; }
-        .tab { padding: 12px 20px; border-radius: 15px; border: 2px solid #ddd; font-weight: bold; cursor: pointer; transition: 0.3s; background: #fff; outline: none; }
+        .tab { padding: 12px 20px; border-radius: 15px; border: 2px solid #ddd; font-weight: bold; cursor: pointer; transition: 0.3s; background: #fff; outline: none; -webkit-tap-highlight-color: transparent; }
         .tab.active { color: #333; transform: scale(1.1); }
         .tab-1.active { background-color: var(--lv1-color); border-color: #e6d68a; }
         .tab-2.active { background-color: var(--lv2-color); border-color: #8ccbc8; }
@@ -24,13 +24,14 @@
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.08);
             font-size: 1.4rem; font-weight: bold; margin-bottom: 35px;
-            border: 6px solid #eee; transition: 0.3s; color: #444; position: relative;
+            border: 6px solid #eee; transition: 0.2s; color: #444; position: relative;
         }
         .count-badge { position: absolute; top: 15px; right: 20px; font-size: 0.8rem; color: #999; }
         .draw-btn {
             width: 100%; padding: 18px; border-radius: 50px; border: none;
             color: white; font-size: 1.3rem; font-weight: bold; cursor: pointer;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1); transition: 0.2s;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1); transition: 0.2s; outline: none;
+            -webkit-tap-highlight-color: transparent;
         }
     </style>
 </head>
@@ -47,22 +48,29 @@
     </div>
     <button id="mainBtn" class="draw-btn" onclick="draw()">お題を引く！</button>
 </div>
+
 <script>
     const originalData = {
         1: ["肉派？魚派？", "夏と冬どっち派？", "今ハマっているもの", "朝型？夜型？", "人に言われて嬉しい言葉", "自分の長所をひとつ", "ストレス発散はなにする？", "明日から一か月休みならどこで何したい？", "好きな人は追う？追われたい？", "告白したい？されたい？", "遠距離恋愛はできる？", "今どれくらいフリー？"],
         2: ["恋人には甘えたい？甘えられたい？甘やかしたい？", "恋人との連絡の頻度は？", "理想のデートは？", "まず異性のどこを見る？", "落ち着く瞬間ってどんな時？", "異性にドキッとする瞬間", "付き合う前に知っておきたいことはある？", "酔ったらどうなる？", "三大欲求を10として、その割合は？"],
         3: ["恋人ができたら最初にしたいこと", "週に何回致したい？何回なら致せる？", "Ｓ？Ｍ？", "人生で大事にしていること", "10年後どうなっていたい？", "自分の短所をひとつ", "落ち込んだ時の回復方法", "怒ったときはどうなるタイプ？", "恋人に求めるものは？", "行為について話し合えるタイプ？", "孤独を感じるのはどんな時？", "本気で泣いたのはいつ？"]
     };
+
     let remainingData = { 1: [...originalData[1]], 2: [...originalData[2]], 3: [...originalData[3]] };
     let currentLv = 1;
+    let isDrawing = false; // 連打防止用
+
     const colors = { 1: '#fceea7', 2: '#a7e4e1', 3: '#f294b4' };
     const btnColors = { 1: '#d4c26a', 2: '#78b9b6', 3: '#f294b4' };
+
     function updateCount() {
         const total = originalData[currentLv].length;
         const current = total - remainingData[currentLv].length;
         document.getElementById('count').innerText = current + " / " + total;
     }
+
     function setLv(lv) {
+        if (isDrawing) return;
         currentLv = lv;
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
         document.getElementById('tab' + lv).classList.add('active');
@@ -71,22 +79,40 @@
         document.getElementById('odae-text').innerText = "Level " + lv + " を選択中";
         updateCount();
     }
+
     function draw() {
+        if (isDrawing) return; // 連打されたら無視する
+
         if (remainingData[currentLv].length === 0) {
             remainingData[currentLv] = [...originalData[currentLv]];
-            alert("Level " + currentLv + " のお題をすべて出し切りました！リセットします。");
+            alert("Level " + currentLv + " のお題をすべて使い切りました！リセットします。");
+            updateCount();
+            return;
         }
+
+        isDrawing = true;
         const list = remainingData[currentLv];
         const randomIndex = Math.floor(Math.random() * list.length);
         const res = list.splice(randomIndex, 1)[0];
+
         const card = document.getElementById('card');
         const text = document.getElementById('odae-text');
+        
+        // めくる演出
         card.style.transform = "scale(0.95)";
+        card.style.opacity = "0.6";
+
         setTimeout(() => {
             text.innerText = res;
             card.style.transform = "scale(1)";
+            card.style.opacity = "1";
             updateCount();
-        }, 100);
+            
+            // 0.4秒後に次のクリックを許可
+            setTimeout(() => {
+                isDrawing = false;
+            }, 400);
+        }, 150);
     }
     setLv(1);
 </script>
