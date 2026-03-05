@@ -139,7 +139,7 @@
         usedIndexes.pop();
         const prevIndex = usedIndexes[usedIndexes.length - 1];
         document.getElementById('odae-text').innerText = questions[prevIndex];
-        document.getElementById('count-display').innerText = `${usedIndexes.length} / ${questions.length}`;
+        document.getElementById('counter').innerText = `${usedIndexes.length} / ${questions.length}`;
     } else {
         alert("これ以上は戻れないよ！");
     }
