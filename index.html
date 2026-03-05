@@ -134,6 +134,16 @@
         }, 150);
     }
     setLv(1);
+    function back() {
+    if (usedIndexes.length > 1) {
+        usedIndexes.pop();
+        const prevIndex = usedIndexes[usedIndexes.length - 1];
+        document.getElementById('odae-text').innerText = questions[prevIndex];
+        document.getElementById('count-display').innerText = `${usedIndexes.length} / ${questions.length}`;
+    } else {
+        alert("これ以上は戻れないよ！");
+    }
+}
 </script>
   <div style="text-align: center; margin-top: 60px; margin-bottom: 6px;">
   <p style="font-size: 14px; color: #dddddd; font-family: sans-serif; font-weight: bold; margin: 0;">talk with U</p>
