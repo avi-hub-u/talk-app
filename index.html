@@ -15,6 +15,9 @@
         }
         body { font-family: sans-serif; background-color: var(--bg-color); display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; overflow: hidden; }
         .container { width: 90%; max-width: 400px; text-align: center; margin: 20px auto 0; }
+.generate-button:active, .level-button:active {
+    transform: scale(0.95);
+} 
         .tabs { display: flex; justify-content: center; gap: 10px; margin-bottom: 25px; }
         .tab { padding: 12px 20px; border-radius: 15px; border: 2px solid #ddd; font-weight: bold; cursor: pointer; transition: 0.3s; background: #fff; outline: none; -webkit-tap-highlight-color: transparent; }
         .tab.active { color: #333; transform: scale(1.1); }
