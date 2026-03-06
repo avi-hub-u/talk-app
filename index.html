@@ -76,8 +76,9 @@
     };
 
     let remainingData = { 1: [...originalData[1]], 2: [...originalData[2]], 3: [...originalData[3]] };
+    let history = []; // 履歴保存用
     let currentLv = 1;
-    let isDrawing = false; // 連打防止用
+    let isDrawing = false;
 
     const colors = { 1: '#fceea7', 2: '#a7e4e1', 3: '#f294b4' };
     const btnColors = { 1: '#d4c26a', 2: '#78b9b6', 3: '#f294b4' };
@@ -91,6 +92,7 @@
     function setLv(lv) {
         if (isDrawing) return;
         currentLv = lv;
+        history = []; // レベルを変えたら履歴リセット
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
         document.getElementById('tab' + lv).classList.add('active');
         document.getElementById('mainBtn').style.backgroundColor = btnColors[lv];
@@ -100,10 +102,11 @@
     }
 
     function draw() {
-        if (isDrawing) return; // 連打されたら無視する
+        if (isDrawing) return;
 
         if (remainingData[currentLv].length === 0) {
             remainingData[currentLv] = [...originalData[currentLv]];
+            history = [];
             alert("Level " + currentLv + " のお題をすべて使い切りました！リセットします。");
             updateCount();
             return;
@@ -113,37 +116,38 @@
         const list = remainingData[currentLv];
         const randomIndex = Math.floor(Math.random() * list.length);
         const res = list.splice(randomIndex, 1)[0];
+        history.push(res); // 履歴に追加
 
         const card = document.getElementById('card');
         const text = document.getElementById('odae-text');
         
-        // めくる演出
-        card.style.transform = "scale(1)";
         card.style.opacity = "0.6";
 
         setTimeout(() => {
             text.innerText = res;
-            card.style.transform = "scale(1)";
             card.style.opacity = "1";
             updateCount();
-            
-            // 0.4秒後に次のクリックを許可
-            setTimeout(() => {
-                isDrawing = false;
-            }, 400);
+            setTimeout(() => { isDrawing = false; }, 400);
         }, 150);
     }
-    setLv(1);
+
     function back() {
-    if (usedIndexes.length > 1) {
-        usedIndexes.pop();
-        const prevIndex = usedIndexes[usedIndexes.length - 1];
-        document.getElementById('odae-text').innerText = questions[prevIndex];
-        document.getElementById('count').innerText = `${usedIndexes.length} / ${questions.length}`;
-    } else {
-        alert("これ以上は戻れないよ！");
+        if (isDrawing || history.length <= 1) {
+            if (history.length <= 1) alert("これ以上は戻れないよ！");
+            return;
+        }
+        
+        // 今のお題を取り除く
+        const currentOdae = history.pop();
+        remainingData[currentLv].push(currentOdae); // 残りリストに戻す
+        
+        // 一つ前のお題を表示
+        const prevOdae = history[history.length - 1];
+        document.getElementById('odae-text').innerText = prevOdae;
+        updateCount();
     }
-}
+
+    setLv(1);
 </script>
   <div style="text-align: center; margin-top: 60px; margin-bottom: 6px;">
   <p style="font-size: 14px; color: #dddddd; font-family: sans-serif; font-weight: bold; margin: 0;">talk with U</p>
