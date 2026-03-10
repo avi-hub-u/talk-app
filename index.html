@@ -84,7 +84,8 @@
     };
 
     let remainingData = { 1: [...originalData[1]], 2: [...originalData[2]], 3: [...originalData[3]] };
-    let history = []; // 履歴保存用
+    let history = []; 
+    let historyIndex = -1; // 今どこを見ているかの「しおり」
     let currentLv = 1;
     let isDrawing = false;
 
@@ -93,14 +94,17 @@
 
     function updateCount() {
         const total = originalData[currentLv].length;
-        const current = total - remainingData[currentLv].length;
+        // 「これまでに出た種類」を表示
+        const current = originalData[currentLv].length - remainingData[currentLv].length;
         document.getElementById('count').innerText = current + " / " + total;
     }
 
     function setLv(lv) {
         if (isDrawing) return;
         currentLv = lv;
-        history = []; // レベルを変えたら履歴リセット
+        history = []; 
+        historyIndex = -1;
+        remainingData[currentLv] = [...originalData[currentLv]]; // レベル変更でリセット
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
         document.getElementById('tab' + lv).classList.add('active');
         document.getElementById('mainBtn').style.backgroundColor = btnColors[lv];
@@ -112,23 +116,29 @@
     function draw() {
         if (isDrawing) return;
 
+        // 【しおり機能】もし過去に戻っているなら、次の履歴を表示する
+        if (historyIndex < history.length - 1) {
+            historyIndex++;
+            document.getElementById('odae-text').innerText = history[historyIndex];
+            return;
+        }
+
+        // 新しく引く（未出現リストが空なら終了）
         if (remainingData[currentLv].length === 0) {
-            remainingData[currentLv] = [...originalData[currentLv]];
-            history = [];
-            alert("Level " + currentLv + " のお題をすべて使い切りました！リセットします。");
-            updateCount();
+            alert("Level " + currentLv + " のお題をすべて使い切りました！");
             return;
         }
 
         isDrawing = true;
         const list = remainingData[currentLv];
         const randomIndex = Math.floor(Math.random() * list.length);
-        const res = list.splice(randomIndex, 1)[0];
-        history.push(res); // 履歴に追加
+        const res = list.splice(randomIndex, 1)[0]; // 箱から消す（二度と戻さない）
+        
+        history.push(res); // 履歴（アルバム）に保存
+        historyIndex = history.length - 1; // しおりを最新にする
 
         const card = document.getElementById('card');
         const text = document.getElementById('odae-text');
-        
         card.style.opacity = "0.6";
 
         setTimeout(() => {
@@ -140,19 +150,13 @@
     }
 
     function back() {
-        if (isDrawing || history.length <= 1) {
-            if (history.length <= 1) alert("これ以上は戻れないよ！");
+        if (isDrawing || historyIndex <= 0) {
+            if (historyIndex === 0) alert("これ以上は戻れないよ！");
             return;
         }
         
-        // 今のお題を取り除く
-        const currentOdae = history.pop();
-        remainingData[currentLv].push(currentOdae); // 残りリストに戻す
-        
-        // 一つ前のお題を表示
-        const prevOdae = history[history.length - 1];
-        document.getElementById('odae-text').innerText = prevOdae;
-        updateCount();
+        historyIndex--; // しおりを戻すだけ（お題は箱に戻さない）
+        document.getElementById('odae-text').innerText = history[historyIndex];
     }
 
     setLv(1);
