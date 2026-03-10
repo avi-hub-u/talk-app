@@ -7,12 +7,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="manifest" href="manifest.json">
     <script>
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js')
-          .then(() => console.log('ServiceWorker registered'))
-          .catch(err => console.log('ServiceWorker error', err));
-      }
-    </script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').then(reg => {
+      // 新しい更新（v2, v3...）を見つけたら勝手に画面を新しくする命令
+      reg.onupdatefound = () => {
+        const worker = reg.installing;
+        worker.onstatechange = () => {
+          if (worker.state === 'installed' && navigator.serviceWorker.controller) {
+            // これで友達の画面もパッと最新版に切り替わります
+            window.location.reload();
+          }
+        };
+      };
+    });
+  }
+</script>
     <title>talk with U - v1.0</title>
     <style>
         :root {
