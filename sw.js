@@ -1,4 +1,4 @@
-const CACHE_NAME = 'talk-with-u-v12';
+const CACHE_NAME = 'talk-with-u-v13';
 const urlsToCache = ['./', './index.html', './manifest.json', './icon.png'];
 
 self.addEventListener('install', (event) => {
