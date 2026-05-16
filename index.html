@@ -1,27 +1,25 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<link rel="icon" href="icon.png">
-<link rel="apple-touch-icon" href="icon.png">    
+    <link rel="icon" href="icon.png">
+    <link rel="apple-touch-icon" href="icon.png">    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="manifest" href="manifest.json">
     <script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js').then(reg => {
-      // 新しい更新（v2, v3...）を見つけたら勝手に画面を新しくする命令
-      reg.onupdatefound = () => {
-        const worker = reg.installing;
-        worker.onstatechange = () => {
-          if (worker.state === 'installed' && navigator.serviceWorker.controller) {
-            // これで友達の画面もパッと最新版に切り替わります
-            window.location.reload();
-          }
-        };
-      };
-    });
-  }
-</script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js').then(reg => {
+          reg.onupdatefound = () => {
+            const worker = reg.installing;
+            worker.onstatechange = () => {
+              if (worker.state === 'installed' && navigator.serviceWorker.controller) {
+                window.location.reload();
+              }
+            };
+          };
+        });
+      }
+    </script>
     <title>talk with U - v1.0</title>
     <style>
         :root {
@@ -54,26 +52,14 @@
             box-shadow: 0 5px 15px rgba(0,0,0,0.1); transition: 0.2s; outline: none;
             -webkit-tap-highlight-color: transparent;
             }
-        .draw-btn:active {
-  transform: scale(0.9);
-  box-shadow: none;
-}
-        .back-text {
-    position: absolute;
-    bottom: 15px;
-    left: 20px;
-    font-size: 12px;
-    color: #bbbbbb;
-    font-family: sans-serif;
-    cursor: pointer;
-    letter-spacing: 1px;
-}
+        .draw-btn:active { transform: scale(0.9); box-shadow: none; }
+        .back-text { position: absolute; bottom: 15px; left: 20px; font-size: 12px; color: #bbbbbb; font-family: sans-serif; cursor: pointer; letter-spacing: 1px; }
     </style>
 </head>
 <body>
   <div class="container">
     <div class="tabs">
-      <button id="tab1" class="tab tab-1 active" onclick="setLv(1)">Lv 1</button>
+        <button id="tab1" class="tab tab-1 active" onclick="setLv(1)">Lv 1</button>
         <button id="tab2" class="tab tab-2" onclick="setLv(2)">Lv 2</button>
         <button id="tab3" class="tab tab-3" onclick="setLv(3)">Lv 3</button>
     </div>
@@ -81,12 +67,12 @@
         <div id="count" class="count-badge"></div>
         <div id="odae-text">お題を引こう！</div>
         <div class="back-text" onclick="event.stopPropagation(); back();">← back</div>
-        </div>
+    </div>
     <button id="mainBtn" class="draw-btn" onclick="draw()">お題を引く！</button>
-</div>
+  </div>
 
 <script>
-const originalData = {
+    const originalData = {
         1: ["肉派？魚派？", "夏と冬どっち派？", "今ハマっているもの", "朝型？夜型？", "人に言われて嬉しい言葉", "自分の長所をひとつ", "ストレス発散はなにする？", "明日から1ヶ月休みならどこで何したい？", "好きな人は追う？追われたい？", "告白したい？されたい？", "遠距離恋愛はできる？", "今どれくらいフリー？"],
         2: ["恋人には甘えたい？甘えられたい？甘やかしたい？", "恋人との連絡の頻度は？", "理想のデートは？", "まず異性のどこを見る？", "落ち着く瞬間ってどんな時？", "異性にドキッとする瞬間", "付き合う前に知っておきたいことはある？", "酔ったらどうなる？", "三大欲求を10として、その割合は？"],
         3: ["恋人ができたら最初にしたいこと", "週に何回致したい？何回なら致せる？", "Ｓ？Ｍ？", "人生で大事にしていること", "10年後どうなっていたい？", "自分の短所をひとつ", "落ち込んだ時の回復方法", "怒ったときはどうなるタイプ？", "恋人に求めるものは？", "行為について話し合えるタイプ？", "孤独を感じるのはどんな時？", "本気で泣いたのはいつ？"]
@@ -94,7 +80,7 @@ const originalData = {
 
     let remainingData = { 1: [...originalData[1]], 2: [...originalData[2]], 3: [...originalData[3]] };
     let history = []; 
-    let historyIndex = -1; // 今どこを見ているかの「しおり」
+    let historyIndex = -1;
     let currentLv = 1;
     let isDrawing = false;
 
@@ -103,7 +89,6 @@ const originalData = {
 
     function updateCount() {
         const total = originalData[currentLv].length;
-        // 「これまでに出た種類」を表示
         const current = originalData[currentLv].length - remainingData[currentLv].length;
         document.getElementById('count').innerText = current + " / " + total;
     }
@@ -111,22 +96,12 @@ const originalData = {
     function setLv(lv) {
         if (isDrawing) return;
         currentLv = lv;
-        function setLv(lv) {
-        if (isDrawing) return;
-        currentLv = lv;
         
-        // リセット命令です
+        // 【完全リセット状態に戻しました】
         history = []; 
         historyIndex = -1;
-        remainingData[currentLv] = [...originalData[currentLv]]; 
+        remainingData[lv] = [...originalData[lv]]; 
 
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        document.getElementById('tab' + lv).classList.add('active');
-        document.getElementById('mainBtn').style.backgroundColor = btnColors[lv];
-        document.getElementById('card').style.borderColor = colors[lv];
-        document.getElementById('odae-text').innerText = "Level " + lv ;
-        updateCount();
-    }
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
         document.getElementById('tab' + lv).classList.add('active');
         document.getElementById('mainBtn').style.backgroundColor = btnColors[lv];
@@ -137,32 +112,24 @@ const originalData = {
 
     function draw() {
         if (isDrawing) return;
-
-        // 【しおり機能】もし過去に戻っているなら、次の履歴を表示する
         if (historyIndex < history.length - 1) {
             historyIndex++;
             document.getElementById('odae-text').innerText = history[historyIndex];
             return;
         }
-
-        // 新しく引く（未出現リストが空なら終了）
         if (remainingData[currentLv].length === 0) {
             alert("Level " + currentLv + " のお題をすべて使い切りました！");
             return;
         }
-
         isDrawing = true;
         const list = remainingData[currentLv];
         const randomIndex = Math.floor(Math.random() * list.length);
-        const res = list.splice(randomIndex, 1)[0]; // 箱から消す（二度と戻さない）
-        
-        history.push(res); // 履歴（アルバム）に保存
-        historyIndex = history.length - 1; // しおりを最新にする
-
+        const res = list.splice(randomIndex, 1)[0];
+        history.push(res);
+        historyIndex = history.length - 1;
         const card = document.getElementById('card');
         const text = document.getElementById('odae-text');
         card.style.opacity = "0.6";
-
         setTimeout(() => {
             text.innerText = res;
             card.style.opacity = "1";
@@ -176,13 +143,13 @@ const originalData = {
             if (historyIndex === 0) alert("これ以上は戻れないよ！");
             return;
         }
-        
-        historyIndex--; // しおりを戻すだけ（お題は箱に戻さない）
+        historyIndex--;
         document.getElementById('odae-text').innerText = history[historyIndex];
     }
 
     setLv(1);
 </script>
+
 <div style="text-align: center; margin-top: 60px; margin-bottom: 6px;">
   <p style="font-size: 14px; color: #dddddd; font-family: sans-serif; font-weight: bold; margin: 0;">talk with U</p>
   <p style="font-size: 11px; color: #bbbbbb; font-family: sans-serif; margin: 2px 0 0 0;">created by avi</p>
