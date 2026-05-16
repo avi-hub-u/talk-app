@@ -111,6 +111,22 @@ const originalData = {
     function setLv(lv) {
         if (isDrawing) return;
         currentLv = lv;
+        function setLv(lv) {
+        if (isDrawing) return;
+        currentLv = lv;
+        
+        // リセット命令です
+        history = []; 
+        historyIndex = -1;
+        remainingData[currentLv] = [...originalData[currentLv]]; 
+
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.getElementById('tab' + lv).classList.add('active');
+        document.getElementById('mainBtn').style.backgroundColor = btnColors[lv];
+        document.getElementById('card').style.borderColor = colors[lv];
+        document.getElementById('odae-text').innerText = "Level " + lv ;
+        updateCount();
+    }
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
         document.getElementById('tab' + lv).classList.add('active');
         document.getElementById('mainBtn').style.backgroundColor = btnColors[lv];
