@@ -111,8 +111,6 @@
     function setLv(lv) {
         if (isDrawing) return;
         currentLv = lv;
-        history = []; 
-        historyIndex = -1;
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
         document.getElementById('tab' + lv).classList.add('active');
         document.getElementById('mainBtn').style.backgroundColor = btnColors[lv];
