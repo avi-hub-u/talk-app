@@ -86,94 +86,86 @@
 </div>
 
 <script>
-    // ===== お題データ =====
 const originalData = {
-    1: ["肉派？魚派？", "夏と冬どっち派？", "今ハマっているもの", "朝型？夜型？", "人に言われて嬉しい言葉", "自分の長所をひとつ", "ストレス発散はなにする？", "明日から1ヶ月休みならどこで何したい？", "好きな人は追う？追われたい？", "告白したい？されたい？", "遠距離恋愛はできる？", "今どれくらいフリー？"],
-    2: ["恋人には甘えたい？甘えられたい？甘やかしたい？", "恋人との連絡の頻度は？", "理想のデートは？", "まず異性のどこを見る？", "落ち着く瞬間ってどんな時？", "異性にドキッとする瞬間", "付き合う前に知っておきたいことはある？", "酔ったらどうなる？", "三大欲求を10として、その割合は？"],
-    3: ["恋人ができたら最初にしたいこと", "週に何回致したい？何回なら致せる？", "Ｓ？Ｍ？", "人生で大事にしていること", "10年後どうなっていたい？", "自分の短所をひとつ", "落ち込んだ時の回復方法", "怒ったときはどうなるタイプ？", "恋人に求めるものは？", "行為について話し合えるタイプ？", "孤独を感じるのはどんな時？", "本気で泣いたのはいつ？"]
-};
+        1: ["肉派？魚派？", "夏と冬どっち派？", "今ハマっているもの", "朝型？夜型？", "人に言われて嬉しい言葉", "自分の長所をひとつ", "ストレス発散はなにする？", "明日から1ヶ月休みならどこで何したい？", "好きな人は追う？追われたい？", "告白したい？されたい？", "遠距離恋愛はできる？", "今どれくらいフリー？"],
+        2: ["恋人には甘えたい？甘えられたい？甘やかしたい？", "恋人との連絡の頻度は？", "理想のデートは？", "まず異性のどこを見る？", "落ち着く瞬間ってどんな時？", "異性にドキッとする瞬間", "付き合う前に知っておきたいことはある？", "酔ったらどうなる？", "三大欲求を10として、その割合は？"],
+        3: ["恋人ができたら最初にしたいこと", "週に何回致したい？何回なら致せる？", "Ｓ？Ｍ？", "人生で大事にしていること", "10年後どうなっていたい？", "自分の短所をひとつ", "落ち込んだ時の回復方法", "怒ったときはどうなるタイプ？", "恋人に求めるものは？", "行為について話し合えるタイプ？", "孤独を感じるのはどんな時？", "本気で泣いたのはいつ？"]
+    };
 
-// 未出現のお題リスト（引いたら消える箱）
-let remainingData = { 1: [...originalData[1]], 2: [...originalData[2]], 3: [...originalData[3]] };
+    let remainingData = { 1: [...originalData[1]], 2: [...originalData[2]], 3: [...originalData[3]] };
+    let history = []; 
+    let historyIndex = -1; // 今どこを見ているかの「しおり」
+    let currentLv = 1;
+    let isDrawing = false;
 
-// 履歴をレベルごとに管理（backボタンがレベルをまたがないように）
-let history = { 1: [], 2: [], 3: [] };
-let historyIndex = { 1: -1, 2: -1, 3: -1 }; // 今どこを見ているかの「しおり」
+    const colors = { 1: '#fceea7', 2: '#a7e4e1', 3: '#f294b4' };
+    const btnColors = { 1: '#d4c26a', 2: '#78b9b6', 3: '#f294b4' };
 
-let currentLv = 1; // 今選ばれているレベル
-let isDrawing = false; // アニメーション中の連打防止
-
-// レベルごとの色設定
-const colors = { 1: '#fceea7', 2: '#a7e4e1', 3: '#f294b4' };
-const btnColors = { 1: '#d4c26a', 2: '#78b9b6', 3: '#f294b4' };
-
-// カウント表示を更新する
-function updateCount() {
-    const total = originalData[currentLv].length;
-    const current = originalData[currentLv].length - remainingData[currentLv].length;
-    document.getElementById('count').innerText = current + " / " + total;
-}
-
-// レベル切り替え（履歴はレベルごとに保持、リセットしない）
-function setLv(lv) {
-    if (isDrawing) return;
-    currentLv = lv;
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.getElementById('tab' + lv).classList.add('active');
-    document.getElementById('mainBtn').style.backgroundColor = btnColors[lv];
-    document.getElementById('card').style.borderColor = colors[lv];
-    document.getElementById('odae-text').innerText = "Level " + lv;
-    updateCount();
-}
-
-// お題を引く
-function draw() {
-    if (isDrawing) return;
-
-    // 【しおり機能】過去に戻っているなら次の履歴を表示する
-    if (historyIndex[currentLv] < history[currentLv].length - 1) {
-        historyIndex[currentLv]++;
-        document.getElementById('odae-text').innerText = history[currentLv][historyIndex[currentLv]];
-        return;
+    function updateCount() {
+        const total = originalData[currentLv].length;
+        // 「これまでに出た種類」を表示
+        const current = originalData[currentLv].length - remainingData[currentLv].length;
+        document.getElementById('count').innerText = current + " / " + total;
     }
 
-    // 未出現リストが空なら終了
-    if (remainingData[currentLv].length === 0) {
-        alert("Level " + currentLv + " のお題をすべて使い切りました！");
-        return;
-    }
-
-    isDrawing = true;
-    const list = remainingData[currentLv];
-    const randomIndex = Math.floor(Math.random() * list.length);
-    const res = list.splice(randomIndex, 1)[0]; // 箱から消す（二度と戻さない）
-
-    history[currentLv].push(res); // 履歴（アルバム）に保存
-    historyIndex[currentLv] = history[currentLv].length - 1; // しおりを最新にする
-
-    const card = document.getElementById('card');
-    const text = document.getElementById('odae-text');
-    card.style.opacity = "0.6";
-
-    setTimeout(() => {
-        text.innerText = res;
-        card.style.opacity = "1";
+    function setLv(lv) {
+        if (isDrawing) return;
+        currentLv = lv;
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.getElementById('tab' + lv).classList.add('active');
+        document.getElementById('mainBtn').style.backgroundColor = btnColors[lv];
+        document.getElementById('card').style.borderColor = colors[lv];
+        document.getElementById('odae-text').innerText = "Level " + lv ;
         updateCount();
-        setTimeout(() => { isDrawing = false; }, 400);
-    }, 150);
-}
-
-// backボタン（そのレベル内の履歴だけ戻る）
-function back() {
-    if (isDrawing || historyIndex[currentLv] <= 0) {
-        if (historyIndex[currentLv] === 0) alert("これ以上は戻れないよ！");
-        return;
     }
-    historyIndex[currentLv]--; // しおりを戻すだけ（お題は箱に戻さない）
-    document.getElementById('odae-text').innerText = history[currentLv][historyIndex[currentLv]];
-}
 
-setLv(1); // 最初はLv1を表示
+    function draw() {
+        if (isDrawing) return;
+
+        // 【しおり機能】もし過去に戻っているなら、次の履歴を表示する
+        if (historyIndex < history.length - 1) {
+            historyIndex++;
+            document.getElementById('odae-text').innerText = history[historyIndex];
+            return;
+        }
+
+        // 新しく引く（未出現リストが空なら終了）
+        if (remainingData[currentLv].length === 0) {
+            alert("Level " + currentLv + " のお題をすべて使い切りました！");
+            return;
+        }
+
+        isDrawing = true;
+        const list = remainingData[currentLv];
+        const randomIndex = Math.floor(Math.random() * list.length);
+        const res = list.splice(randomIndex, 1)[0]; // 箱から消す（二度と戻さない）
+        
+        history.push(res); // 履歴（アルバム）に保存
+        historyIndex = history.length - 1; // しおりを最新にする
+
+        const card = document.getElementById('card');
+        const text = document.getElementById('odae-text');
+        card.style.opacity = "0.6";
+
+        setTimeout(() => {
+            text.innerText = res;
+            card.style.opacity = "1";
+            updateCount();
+            setTimeout(() => { isDrawing = false; }, 400);
+        }, 150);
+    }
+
+    function back() {
+        if (isDrawing || historyIndex <= 0) {
+            if (historyIndex === 0) alert("これ以上は戻れないよ！");
+            return;
+        }
+        
+        historyIndex--; // しおりを戻すだけ（お題は箱に戻さない）
+        document.getElementById('odae-text').innerText = history[historyIndex];
+    }
+
+    setLv(1);
 </script>
 <div style="text-align: center; margin-top: 60px; margin-bottom: 6px;">
   <p style="font-size: 14px; color: #dddddd; font-family: sans-serif; font-weight: bold; margin: 0;">talk with U</p>
